@@ -19,7 +19,10 @@ def find_cycles(start_point, points_set, distance=20):
                 if next not in merged_points:
                     merged_points.add(next)
                     merged_points.add(next_list.previous.value)
-                    yield _merge_paths(next_list.previous, paths[next])
+                    result = _merge_paths(next_list.previous, paths[next])
+                    if len(result) > 3:
+                        yield result
+                        points_queue = _make_new_queue(points_queue, next) # Очень сомнительная штука, но перебор отсекает
                 continue
             paths[next] = next_list
             points_queue.append(next_list)
@@ -33,6 +36,19 @@ def _merge_paths(first, second):
         if n > 0:
             result = SinglyLinkedList(item, result)
     return result
+
+
+def _make_new_queue(queue, parent):
+    if len(queue) == 0:
+        return queue
+    result = deque()
+    while len(queue) > 0:
+        last = queue.popleft()
+        if last.value == parent:
+            continue
+        result.append(last)
+    return result
+
 
 
 def get_neighbours(current, distance=1):
@@ -75,6 +91,10 @@ if __name__ == '__main__':
     s.add((0,1))
     s.add((2,1))
     s.add((1,2))
+    s.add((2,2))
+    s.add((0,0))
+    s.add((0,2))
+    s.add((2,0))
 
     for c in find_cycles((1,0), s, 1):
         for i in c:
