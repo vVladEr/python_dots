@@ -1,56 +1,71 @@
-import math
 
 import pygame
 import sys
 import game_map
+import dots_player
 
 
 # размер экрана
 size = width, height = 600, 400
 
-# размер квадратов и цвета
 GRAY = (211, 211, 211)
 WHITE = (255, 255, 255)
-BLUE = (0, 0, 139)
-RED = (255, 69, 0)
-# инициализация PyGame
+
 pygame.init()
 
 
 class Game:
-    def __init__(self, column_count, line_count):
+    def __init__(self, column_count, line_count, players_count):
         self._dots = set()
-        # создание окна
-        self._screen = pygame.display.set_mode(size)
-        # заполнение экрана белым цветом
-        self._screen.fill(WHITE)
-        self._colour_flag = True
         # количество квадратов по горизонтали и вертикали
-        self._column_count = column_count
-        self._line_count = line_count
         self._map = game_map.Map(width, height, column_count, line_count)
+        self._steps_count = (column_count + 1) * (line_count + 1)
+        self._players = []
+        self.players_count = players_count
+        for i in range(players_count):
+            player = dots_player.Player(i)
+            self._players.append(player)
+        self.current_player = 0
 
-    def _draw_net(self):
+    def _create_start_screen(self):
+        self._screen = pygame.display.set_mode(size)
+        self._screen.fill(WHITE)
         for rect in self._map.get_net_rectangles():
             pygame.draw.rect(self._screen, GRAY, rect, 1)
         pygame.display.flip()
 
+    def _update_player_index(self):
+        self.current_player += 1
+        self.current_player %= self.players_count
+
+    def _is_not_used_point(self, dot):
+        for player in self._players:
+            if dot in player.pressed_dots:
+                return False
+        return True
+
+    def _try_make_step(self, pos):
+        player = self._players[self.current_player]
+        colour = player.colour
+        if self._is_not_used_point(pos):
+            pygame.draw.circle(self._screen, colour, pos, 5)
+            pygame.display.update()
+            player.pressed_dots.add(pos)
+            self._update_player_index()
+            return True
+        return False
+
     def run(self):
-        # главный цикл
-        self._draw_net()
-        while True:
+        self._create_start_screen()
+        while self._steps_count > 0:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
-                        colour = RED
                         pos = game_map.get_closest_cross(event.pos)
-                        if self._colour_flag:
-                            colour = BLUE
-                        if pos not in self._dots:
-                            self._colour_flag = not self._colour_flag
-                            pygame.draw.circle(self._screen, colour, pos, 5)
-                            self._dots.add(pos)
-                            pygame.display.update()
+                        if self._map.in_bounds(pos):
+                            is_success = self._try_make_step(pos)
+                            if is_success:
+                                self._steps_count += 1

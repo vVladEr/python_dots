@@ -50,7 +50,6 @@ def _make_new_queue(queue, parent):
     return result
 
 
-
 def get_neighbours(current, distance=1):
     for dx in range(-1, 2):
         for dy in range(-1, 2):
@@ -83,6 +82,7 @@ class SinglyLinkedList:
         result = self._current.value
         self._current = self._current.previous
         return result
+
 
 if __name__ == '__main__':
     # Для дебага

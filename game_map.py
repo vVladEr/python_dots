@@ -10,6 +10,7 @@ class Map:
         self.screen_height = screen_height
         self._column_count = column_count
         self._line_count = line_count
+        self._add_corners()
 
     def get_net_rectangles(self):
         rect_x = (self.screen_width - self._column_count * SQUARE_SIZE) // 2
@@ -18,6 +19,19 @@ class Map:
             for j in range(self._line_count):
                 rect = (rect_x + i * SQUARE_SIZE, rect_y + j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
                 yield rect
+
+    def _add_corners(self):
+        right_x = (self.screen_width - self._column_count * SQUARE_SIZE) // 2
+        right_y = (self.screen_height - self._line_count * SQUARE_SIZE) // 2
+        self._right_top = (right_x, right_y)
+        left_x = (self.screen_width + self._column_count * SQUARE_SIZE) // 2
+        left_y = (self.screen_height + self._line_count * SQUARE_SIZE) // 2
+        self._left_bottom = (left_x, left_y)
+
+    def in_bounds(self, pos):
+        flag_x = self._right_top[0] <= pos[0] <= self._left_bottom[0]
+        flag_y = self._right_top[1] <= pos[1] <= self._left_bottom[1]
+        return flag_x and flag_y
 
 
 def get_dist(dot1, dot2):
