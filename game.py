@@ -66,17 +66,15 @@ class Game:
         player = self._players[self.current_player]
         cycles = bfs.find_cycles(pos, player.pressed_dots)
         for cycle in cycles:
-            route = [x for x in cycle]
-            if len(route):
-                self._draw_shape(route)
+            self._draw_shape(list(cycle))
 
     def _draw_shape(self, cycle):
         colour = self._players[self.current_player].colour
-        for i in range(len(cycle)-1):
-            pygame.draw.line(self._screen, colour, cycle[i], cycle[i+1], 3)
-            pygame.display.update()
-        pygame.draw.line(self._screen, colour, cycle[-1], cycle[0], 3)
+        n = len(cycle)
+        for i in range(n):
+            pygame.draw.line(self._screen, colour, cycle[i], cycle[(i+1) % n], 3)
         pygame.display.update()
+
 
     def run(self):
         self._create_start_screen()
