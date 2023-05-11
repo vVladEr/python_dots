@@ -3,6 +3,7 @@ import pygame
 import sys
 import game_map
 import dots_player
+import  bfs
 
 
 # размер экрана
@@ -51,9 +52,26 @@ class Game:
             pygame.draw.circle(self._screen, colour, pos, 5)
             pygame.display.update()
             player.pressed_dots.add(pos)
+            self._try_find_cycle(pos)
             self._update_player_index()
             return True
         return False
+
+    def _try_find_cycle(self, pos):
+        player = self._players[self.current_player]
+        cycles = bfs.find_cycles(pos, player.pressed_dots)
+        for cycle in cycles:
+            route = [x for x in cycle]
+            if len(route):
+                self._draw_shape(route)
+
+    def _draw_shape(self, cycle):
+        colour = self._players[self.current_player].colour
+        for i in range(len(cycle)-1):
+            pygame.draw.line(self._screen, colour, cycle[i], cycle[i+1])
+            pygame.display.update()
+        pygame.draw.line(self._screen, colour, cycle[-1], cycle[0])
+        pygame.display.update()
 
     def run(self):
         self._create_start_screen()
