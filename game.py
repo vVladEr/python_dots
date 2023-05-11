@@ -14,7 +14,6 @@ WHITE = (255, 255, 255)
 
 pygame.init()
 
-
 class Game:
     def __init__(self, column_count, line_count, players_count):
         self._dots = set()
@@ -33,6 +32,12 @@ class Game:
         self._screen.fill(WHITE)
         for rect in self._map.get_net_rectangles():
             pygame.draw.rect(self._screen, GRAY, rect, 1)
+        for i in range(len(self._players)):
+            self._screen.blit(self._players[i].get_points_text(), (10, 10 + i * 30))
+            #edge = 10
+            #if i % 2:
+            #    edge = 450
+            #self._screen.blit(self._players[i].get_points_text(), (edge, 10 + i // 2 * 30))
         pygame.display.flip()
 
     def _update_player_index(self):
@@ -68,9 +73,9 @@ class Game:
     def _draw_shape(self, cycle):
         colour = self._players[self.current_player].colour
         for i in range(len(cycle)-1):
-            pygame.draw.line(self._screen, colour, cycle[i], cycle[i+1])
+            pygame.draw.line(self._screen, colour, cycle[i], cycle[i+1], 3)
             pygame.display.update()
-        pygame.draw.line(self._screen, colour, cycle[-1], cycle[0])
+        pygame.draw.line(self._screen, colour, cycle[-1], cycle[0], 3)
         pygame.display.update()
 
     def run(self):
