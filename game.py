@@ -1,24 +1,24 @@
-
 import pygame
 import sys
 import game_map
 import dots_player
-import  bfs
+import bfs
 
 
 # размер экрана
-size = width, height = 600, 400
+SIZE = WIDTH, HEIGHT = 600, 400
 
 GRAY = (211, 211, 211)
 WHITE = (255, 255, 255)
 
 pygame.init()
 
+
 class Game:
     def __init__(self, column_count, line_count, players_count):
         self._dots = set()
         # количество квадратов по горизонтали и вертикали
-        self._map = game_map.Map(width, height, column_count, line_count)
+        self._map = game_map.Map(WIDTH, HEIGHT, column_count, line_count)
         self._steps_count = (column_count + 1) * (line_count + 1)
         self._players = []
         self.players_count = players_count
@@ -28,7 +28,7 @@ class Game:
         self.current_player = 0
 
     def _create_start_screen(self):
-        self._screen = pygame.display.set_mode(size)
+        self._screen = pygame.display.set_mode(SIZE)
         self._screen.fill(WHITE)
         for rect in self._map.get_net_rectangles():
             pygame.draw.rect(self._screen, GRAY, rect, 1)
@@ -66,7 +66,27 @@ class Game:
         player = self._players[self.current_player]
         cycles = bfs.find_cycles(pos, player.pressed_dots)
         for cycle in cycles:
-            self._draw_shape(list(cycle))
+            path_list = list(cycle)
+            self._draw_shape(path_list)
+            continue
+            path_set = set(path_list)
+            inside_point = bfs.find_close_point_inside(path_set, pos, game_map.SQUARE_SIZE)
+            if inside_point is None:
+                continue
+            inside_area = bfs.get_inside_area(path_set, inside_point, game_map.SQUARE_SIZE)
+            enemy_points = self._intersect_enemy_dots(inside_area, player)
+            if len(enemy_points) > 0:
+                self._draw_shape(path_list)
+                player.points += len(enemy_points)
+
+    def _intersect_enemy_dots(self, area_inside_cycle, current_player):
+        enemy_points = set()
+        for enemy in self._players:
+            if enemy.number == current_player.number:
+                continue
+            enemy_intersection = area_inside_cycle.intersection(enemy.pressed_dots)
+            enemy_points = enemy_points.union(enemy_intersection)
+        return enemy_points
 
     def _draw_shape(self, cycle):
         colour = self._players[self.current_player].colour
@@ -74,7 +94,6 @@ class Game:
         for i in range(n):
             pygame.draw.line(self._screen, colour, cycle[i], cycle[(i+1) % n], 3)
         pygame.display.update()
-
 
     def run(self):
         self._create_start_screen()

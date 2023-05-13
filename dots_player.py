@@ -7,6 +7,7 @@ PLAYER_COLOURS = {0: BLUE, 1: RED}
 pygame.font.init()
 f = pygame.font.SysFont("arial", 24)
 
+
 class Player:
     def __init__(self, number):
         self.number = number
