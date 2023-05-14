@@ -67,8 +67,6 @@ class Game:
         cycles = bfs.find_cycles(pos, player.pressed_dots)
         for cycle in cycles:
             path_list = list(cycle)
-            self._draw_shape(path_list)
-            continue
             path_set = set(path_list)
             inside_point = bfs.find_close_point_inside(path_set, pos, game_map.SQUARE_SIZE)
             if inside_point is None:

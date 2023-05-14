@@ -16,18 +16,19 @@ def find_cycles(start_point, points_set, distance=20):
             next_list = SinglyLinkedList(next, current_list)
             if next in paths:
                 if next not in merged_points:
-                    merged_points.add(next)
-                    merged_points.add(next_list.previous.value)
-                    result = _merge_paths(next_list.previous, paths[next])
-                    if len(result) > 3:
-                        yield result
-                        points_queue = _make_new_queue(points_queue, next)
+                    if next_list.second != paths[next].second:
+                        merged_points.add(next)
+                        merged_points.add(next_list.previous.value)
+                        result = _merge_paths(next_list.previous, paths[next])
+                        if len(result) > 3 and _have_point_inside(result, distance):
+                            yield result
+                            points_queue = _make_new_queue(points_queue, next)
                 continue
             paths[next] = next_list
             points_queue.append(next_list)
 
 
-def get_inside_area(path_set, point_inside, distance=1):
+def get_inside_area(path_set, point_inside, distance=20):
     stack = [point_inside]
     result = set()
     while len(stack) > 0:
@@ -40,17 +41,15 @@ def get_inside_area(path_set, point_inside, distance=1):
     return result
 
 
-def _get_possible_directions(current_point, distance=1):
+def _get_possible_directions(current_point, distance=20):
     yield current_point[0], current_point[1] + distance
     yield current_point[0], current_point[1] - distance
     yield current_point[0] + distance, current_point[1]
     yield current_point[0] - distance, current_point[1]
 
 
-def find_close_point_inside(path_set, current_point, distance=1):
+def find_close_point_inside(path_set, current_point, distance=20):
     max_y, min_y = get_max_and_min(path_set, lambda x: x[1])
-    # if not(_have_point_inside(path_set, max_y, min_y, distance)):
-    #     return None
 
     for point in get_neighbours(current_point, distance):
         if point in path_set:
@@ -119,7 +118,8 @@ def _create_y_levels(path, max_y, min_y, distance=1):
     return y_levels
 
 
-def _have_point_inside(path, max_y, min_y, distance=1):
+def _have_point_inside(path, distance=1):
+    max_y, min_y = get_max_and_min(path, lambda x: x[1])
     y_levels = _create_y_levels(path, max_y, min_y, distance)
     if len(y_levels) < 3:
         return False
@@ -152,7 +152,7 @@ def _make_new_queue(queue, parent):
     return result
 
 
-def get_neighbours(current, distance=1):
+def get_neighbours(current, distance=20):
     for dx in range(-1, 2):
         for dy in range(-1, 2):
             if dx == dy == 0:
@@ -168,6 +168,15 @@ class SinglyLinkedList:
         if previous is not None:
             self.length += len(previous)
         self._current = self
+        self._set_second_element()
+
+    def _set_second_element(self):
+        if self.length == 2:
+            self.second = self.value
+        if self.length < 2:
+            self.second = None
+        if self.length > 2:
+            self.second = self.previous.second
 
     def __len__(self):
         return self.length
@@ -231,9 +240,10 @@ if __name__ == '__main__':
         s.add((2, 3))
         s.add((2, 2))
 
-        p = find_close_point_inside(s, (0, 1))
+        p = find_close_point_inside(s, (0, 1), 1)
         print(f'point: {p}')
-        area = get_inside_area(s, p)
+
+        area = get_inside_area(s, p, 1)
         print(area)
 
         l = SinglyLinkedList(1)
