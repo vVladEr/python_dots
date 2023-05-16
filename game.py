@@ -1,4 +1,5 @@
 import pygame
+import pygame_gui
 import sys
 import game_map
 import dots_player
@@ -6,7 +7,7 @@ import bfs
 
 
 # размер экрана
-SIZE = WIDTH, HEIGHT = 600, 400
+SIZE = WIDTH, HEIGHT = 800, 600
 
 GRAY = (211, 211, 211)
 WHITE = (255, 255, 255)
@@ -16,18 +17,11 @@ pygame.init()
 
 class Game:
     def __init__(self, column_count, line_count, players_count):
-        self._dots = set()
-        self._map = game_map.Map(WIDTH, HEIGHT, column_count, line_count)
-        self._steps_count = (column_count + 1) * (line_count + 1)
-        self._players = []
+        self.column_count = column_count
+        self.line_count = line_count
         self.players_count = players_count
-        for i in range(players_count):
-            player = dots_player.Player(i)
-            self._players.append(player)
-        self.current_player = 0
-        self._caught_dots = set()
 
-    def _create_start_screen(self):
+    def _create_game_screen(self):
         self._screen = pygame.display.set_mode(SIZE)
         self._screen.fill(WHITE)
         for rect in self._map.get_net_rectangles():
@@ -54,7 +48,6 @@ class Game:
         player = self._players[self.current_player]
         colour = player.colour
         pygame.draw.circle(self._screen, colour, pos, 5)
-        pygame.display.update()
         player.pressed_dots.add(pos)
         self._try_find_catching_cycle(pos)
         self._update_player_index()
@@ -71,6 +64,7 @@ class Game:
             enemy_points = self._intersect_enemy_dots(inside_area, player)
             if len(enemy_points) > 0:
                 self._draw_shape(path_list)
+                self._remaining_steps -= (len(inside_area) - len(enemy_points))
                 self._caught_dots = self._caught_dots.union(inside_area)
                 player.points += len(enemy_points)
                 # НЕОБХОДИМО ДОПИСАТЬ ОБНОВЛЕНИЕ ЭКРАНА С ОЧКАМИ
@@ -89,22 +83,125 @@ class Game:
         n = len(cycle)
         for i in range(n):
             pygame.draw.line(self._screen, colour, cycle[i], cycle[(i+1) % n], 3)
-        pygame.display.update()
 
-    def run(self):
-        self._create_start_screen()
-        while self._steps_count > 0:
+    def _switch_scene(self, scene):
+        self._current_scene = scene
+
+    def _menu_scene(self):
+        self._screen = pygame.display.set_mode(SIZE)
+        self._screen.fill(WHITE)
+
+        gui_manager = pygame_gui.UIManager(SIZE)
+
+        small_game_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(((WIDTH - 200) / 7, (HEIGHT - 150) / 2), (200, 150)),
+            text='Start 10x10',
+            manager=gui_manager
+        )
+
+        middle_game_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(((WIDTH - 200) / 2, (HEIGHT - 150) / 2), (200, 150)),
+            text='Start 15x15',
+            manager=gui_manager
+        )
+
+        big_game_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(((WIDTH - 200) * 6 / 7, (HEIGHT - 150) / 2), (200, 150)),
+            text='Start 20x20',
+            manager=gui_manager
+        )
+
+        running = True
+        while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                if event.type == pygame.USEREVENT:
+                    if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                        if event.ui_element == big_game_button:
+                            self.line_count = 20
+                            self.column_count = 20
+                        if event.ui_element == middle_game_button:
+                            self.line_count = 15
+                            self.column_count = 15
+                        if event.ui_element == small_game_button:
+                            self.line_count = 10
+                            self.column_count = 10
+                        running = False
+                        self._switch_scene(self._game_scene)
+
+                gui_manager.process_events(event)
+
+            gui_manager.draw_ui(self._screen)
+            pygame.display.flip()
+            gui_manager.update(pygame.time.Clock().tick(60))
+
+    def _init_game(self):
+        self._dots = set()
+        self._map = game_map.Map(WIDTH, HEIGHT, self.column_count, self.line_count)
+        self._remaining_steps = (self.column_count + 1) * (self.line_count + 1)
+        self._players = []
+        self.players_count = self.players_count
+        for i in range(self.players_count):
+            player = dots_player.Player(i)
+            self._players.append(player)
+        self.current_player = 0
+        self._caught_dots = set()
+
+    def _end_scene(self):
+        gui_manager = pygame_gui.UIManager(SIZE)
+
+        restart_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(((WIDTH - 100) / 2, (HEIGHT - 50) / 8), (100, 50)),
+            text='Restart',
+            manager=gui_manager
+        )
+
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.USEREVENT:
+                    if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                        if event.ui_element == restart_button:
+                            running = False
+                            self._switch_scene(self._menu_scene)
+
+                gui_manager.process_events(event)
+
+            gui_manager.draw_ui(self._screen)
+            pygame.display.flip()
+            gui_manager.update(pygame.time.Clock().tick(60))
+
+    def _game_scene(self):
+        self._init_game()
+        self._create_game_screen()
+        running = True
+        while self._remaining_steps > 0 and running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    self._switch_scene(None)
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         pos = game_map.get_closest_cross(event.pos)
                         if self._map.in_bounds(pos):
                             is_success = self._try_make_step(pos)
                             if is_success:
-                                self._steps_count += 1
+                                self._remaining_steps -= 1
+            pygame.display.flip()
+        if running:
+            self._switch_scene(self._end_scene)
+
+    def run(self):
+        self._switch_scene(self._menu_scene)
+        while self._current_scene is not None:
+            self._current_scene()
+        pygame.quit()
+        sys.exit()
 
 
 def _get_area_inside_cycle(path, pos):

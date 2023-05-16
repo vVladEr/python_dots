@@ -43,6 +43,7 @@ def get_dist(dot1, dot2):
 def get_closest_cross(pos):
     temp_x = (pos[0] // SQUARE_SIZE) * SQUARE_SIZE
     temp_y = (pos[1] // SQUARE_SIZE) * SQUARE_SIZE
+    # temp_x = int(pos[0] / )
     cur_dist = get_dist(pos, (temp_x, temp_y))
     cross_pos = [temp_x, temp_y]
     for dx in range(2):
