@@ -159,8 +159,7 @@ class Game:
         self._caught_dots = set()
 
     def _end_scene(self):
-        gui_manager = pygame_gui.UIManager(SIZE)
-
+        gui_manager = pygame_gui.UIManager(SIZE, "theme.json")
         restart_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(((WIDTH - 100) / 2, (HEIGHT - 50) / 8), (100, 50)),
             text='Restart',
