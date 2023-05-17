@@ -3,6 +3,7 @@ import pygame.font
 BLUE = (0, 0, 139)
 RED = (255, 69, 0)
 GREEN = (0, 139, 0)
+WHITE = (255, 255, 255)
 PLAYER_COLOURS = {0: BLUE, 1: RED, 2: GREEN}
 
 pygame.font.init()
@@ -14,6 +15,7 @@ class Player:
         self.number = number
         self.pressed_dots = set()
         self.colour = PLAYER_COLOURS[number]
+        self.prev_points = 0
         self.points = 0
         self.name = name
         if name is None:
@@ -21,3 +23,6 @@ class Player:
 
     def get_points_text(self):
         return f.render(f'{self.name}: {self.points}', True, self.colour)
+
+    def clear_points_text(self):
+        return f.render(f"{self.name}: {self.prev_points}", True, WHITE)

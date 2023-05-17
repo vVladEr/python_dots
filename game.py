@@ -67,7 +67,16 @@ class Game:
                 self._remaining_steps -= (len(inside_area) - len(enemy_points))
                 self._caught_dots = self._caught_dots.union(inside_area)
                 player.points += len(enemy_points)
-                # НЕОБХОДИМО ДОПИСАТЬ ОБНОВЛЕНИЕ ЭКРАНА С ОЧКАМИ
+                self._update_player_points_counter()
+
+    def _update_player_points_counter(self):
+        i = self.current_player
+        rect = self._players[i].clear_points_text().get_rect()
+        rect.topleft = (10, 10 + i * 30)
+        pygame.draw.rect(self._screen, WHITE, rect)
+        self._screen.blit(self._players[i].get_points_text(), (10, 10 + i * 30))
+        self._players[self.current_player].prev_points = self._players[self.current_player].points
+        pygame.display.flip()
 
     def _intersect_enemy_dots(self, area_inside_cycle, current_player):
         enemy_points = set()
