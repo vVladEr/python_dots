@@ -189,13 +189,14 @@ class Game:
         self._init_game()
         self._create_game_screen()
         running = True
-        while self._remaining_steps > 0 and running:
+        end_flag = False
+        while not end_flag and self._remaining_steps > 0 and running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                     self._switch_scene(None)
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
-                    self._switch_scene(self._end_scene())
+                    end_flag = True
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         pos = game_map.get_closest_cross(event.pos)
