@@ -194,6 +194,8 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
                     self._switch_scene(None)
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+                    self._switch_scene(self._end_scene())
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         pos = game_map.get_closest_cross(event.pos)
