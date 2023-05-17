@@ -11,15 +11,17 @@ SIZE = WIDTH, HEIGHT = 800, 600
 
 GRAY = (211, 211, 211)
 WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (220, 20, 60)
 
 pygame.init()
 
 
 class Game:
-    def __init__(self, column_count, line_count, players_count):
+    def __init__(self, column_count, line_count):
         self.column_count = column_count
         self.line_count = line_count
-        self.players_count = players_count
+        self.players_names = []
 
     def _create_game_screen(self):
         self._screen = pygame.display.set_mode(SIZE)
@@ -110,7 +112,7 @@ class Game:
 
         middle_game_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(((WIDTH - 200) / 2, (HEIGHT - 150) / 2), (200, 150)),
-            text='Start 15x15',
+            text='Start 16x16',
             manager=gui_manager
         )
 
@@ -132,13 +134,13 @@ class Game:
                             self.line_count = 20
                             self.column_count = 20
                         if event.ui_element == middle_game_button:
-                            self.line_count = 15
-                            self.column_count = 15
+                            self.line_count = 16
+                            self.column_count = 16
                         if event.ui_element == small_game_button:
                             self.line_count = 10
                             self.column_count = 10
                         running = False
-                        self._switch_scene(self._game_scene)
+                        self._switch_scene(self._name_players)
 
                 gui_manager.process_events(event)
 
@@ -151,9 +153,9 @@ class Game:
         self._map = game_map.Map(WIDTH, HEIGHT, self.column_count, self.line_count)
         self._remaining_steps = (self.column_count + 1) * (self.line_count + 1)
         self._players = []
-        self.players_count = self.players_count
+        self.players_count = len(self.players_names)
         for i in range(self.players_count):
-            player = dots_player.Player(i)
+            player = dots_player.Player(i, self.players_names[i])
             self._players.append(player)
         self.current_player = 0
         self._caught_dots = set()
@@ -206,6 +208,61 @@ class Game:
             pygame.display.flip()
         if running:
             self._switch_scene(self._end_scene)
+
+    def _name_players(self):
+        f = pygame.font.SysFont('arial', 24)
+
+        self._screen = pygame.display.set_mode(SIZE)
+        self._screen.fill(WHITE)
+
+        gui_manager = pygame_gui.UIManager(SIZE)
+
+        add_player_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((WIDTH - 200, 150), (40, 40)),
+            text='+',
+            manager=gui_manager
+        )
+
+        go_to_game_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((WIDTH - 250, HEIGHT - 100), (200, 40)),
+            text='Start the game',
+            manager=gui_manager
+        )
+
+        label = f.render("Добавьте игроков (не больше 3) и назовите каждого из них", True, BLACK)
+        self._screen.blit(label, (100, 50))
+        text_boxes = []
+
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    self._switch_scene(None)
+                if event.type == pygame.USEREVENT:
+                    if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                        if event.ui_element == go_to_game_button:
+                            _player_names = [box.get_text() for box in text_boxes]
+                            if "" in _player_names:
+                                label = f.render("Пожалуйста, назовите всех игроков", True,
+                                                 RED)
+                                self._screen.blit(label, (100, 100))
+                            else:
+                                running = False
+                                self.players_names = _player_names
+                                self._switch_scene(self._game_scene)
+                        if event.ui_element == add_player_button:
+                            if len(text_boxes) < 3:
+                                text_box = pygame_gui.elements.UITextEntryBox(
+                                            relative_rect=pygame.Rect((200, 150 + len(text_boxes) * 50), (200, 40)),
+                                            manager=gui_manager)
+                                text_boxes.append(text_box)
+
+                gui_manager.process_events(event)
+
+            gui_manager.draw_ui(self._screen)
+            pygame.display.flip()
+            gui_manager.update(pygame.time.Clock().tick(60))
 
     def run(self):
         self._switch_scene(self._menu_scene)
