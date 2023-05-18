@@ -223,13 +223,19 @@ class Game:
             manager=gui_manager
         )
 
+        remove_player_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((WIDTH - 200, 200), (40, 40)),
+            text='-',
+            manager=gui_manager
+        )
+
         go_to_game_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((WIDTH - 250, HEIGHT - 100), (200, 40)),
             text='Start the game',
             manager=gui_manager
         )
 
-        label = f.render("Добавьте игроков (не больше 3) и назовите каждого из них", True, BLACK)
+        label = f.render("Add players (less than 4) and name each of them", True, BLACK)
         self._screen.blit(label, (100, 50))
         text_boxes = []
 
@@ -244,20 +250,25 @@ class Game:
                         if event.ui_element == go_to_game_button:
                             _player_names = [box.get_text() for box in text_boxes]
                             if "" in _player_names:
-                                label = f.render("Пожалуйста, назовите всех игроков", True,
+                                label = f.render("Please name all players", True,
                                                  RED)
                                 self._screen.blit(label, (100, 100))
                             else:
                                 running = False
                                 self.players_names = _player_names
                                 self._switch_scene(self._game_scene)
+                        if event.ui_element == remove_player_button:
+                            if len(text_boxes):
+                                text_boxes[-1].kill()
+                                text_boxes = text_boxes[:-1]
+                                rect = pygame.Rect((200, 150 + len(text_boxes) * 50), (200, 40))
+                                pygame.draw.rect(self._screen, WHITE, rect)
                         if event.ui_element == add_player_button:
                             if len(text_boxes) < 3:
                                 text_box = pygame_gui.elements.UITextEntryBox(
                                             relative_rect=pygame.Rect((200, 150 + len(text_boxes) * 50), (200, 40)),
                                             manager=gui_manager)
                                 text_boxes.append(text_box)
-
                 gui_manager.process_events(event)
 
             gui_manager.draw_ui(self._screen)
