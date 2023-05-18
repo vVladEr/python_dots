@@ -270,7 +270,7 @@ class Game:
                                 rect = pygame.Rect((200, 150 + len(text_boxes) * 50), (200, 40))
                                 pygame.draw.rect(self._screen, WHITE, rect)
                         if event.ui_element == add_player_button:
-                            if len(text_boxes) < 3:
+                            if len(text_boxes) < 4:
                                 text_box = pygame_gui.elements.UITextEntryBox(
                                             relative_rect=pygame.Rect((200, 150 + len(text_boxes) * 50), (200, 40)),
                                             manager=gui_manager)
