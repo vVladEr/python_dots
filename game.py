@@ -140,7 +140,7 @@ class Game:
                             self.line_count = 10
                             self.column_count = 10
                         running = False
-                        self._switch_scene(self._name_players)
+                        self._switch_scene(self._name_players_scene)
 
                 gui_manager.process_events(event)
 
@@ -209,7 +209,7 @@ class Game:
         if running:
             self._switch_scene(self._end_scene)
 
-    def _name_players(self):
+    def _name_players_scene(self):
         f = pygame.font.SysFont('arial', 24)
 
         self._screen = pygame.display.set_mode(SIZE)
@@ -235,9 +235,14 @@ class Game:
             manager=gui_manager
         )
 
-        label = f.render("Add players (less than 4) and name each of them", True, BLACK)
+        label = f.render("Add players and name each of them", True, BLACK)
         self._screen.blit(label, (100, 50))
         text_boxes = []
+
+        text_box = pygame_gui.elements.UITextEntryBox(
+            relative_rect=pygame.Rect((200, 150 + len(text_boxes) * 50), (200, 40)),
+            manager=gui_manager)
+        text_boxes.append(text_box)
 
         running = True
         while running:
@@ -248,19 +253,20 @@ class Game:
                 if event.type == pygame.USEREVENT:
                     if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == go_to_game_button:
-                            _player_names = [box.get_text() for box in text_boxes]
-                            if "" in _player_names:
+                            player_names = [box.get_text() for box in text_boxes]
+                            if "" in player_names:
                                 label = f.render("Please name all players", True,
                                                  RED)
                                 self._screen.blit(label, (100, 100))
                             else:
                                 running = False
-                                self.players_names = _player_names
+                                self.players_names = player_names
                                 self._switch_scene(self._game_scene)
                         if event.ui_element == remove_player_button:
-                            if len(text_boxes):
+                            if len(text_boxes) > 1:
                                 text_boxes[-1].kill()
-                                text_boxes = text_boxes[:-1]
+                                del text_boxes[-1]
+                                gui_manager.update(0)
                                 rect = pygame.Rect((200, 150 + len(text_boxes) * 50), (200, 40))
                                 pygame.draw.rect(self._screen, WHITE, rect)
                         if event.ui_element == add_player_button:
