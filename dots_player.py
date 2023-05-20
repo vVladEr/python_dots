@@ -20,7 +20,7 @@ class Player:
         self.points = 0
         self.name = name
         if name is None:
-            self.name = f'Player{self.number}'
+            self.name = f'Player{self.number + 1}'
 
     def get_points_text(self):
         return f.render(f'{self.name}: {self.points}', True, self.colour)

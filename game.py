@@ -4,6 +4,7 @@ import sys
 import game_map
 import dots_player
 import bfs
+import ai_player
 
 
 # размер экрана
@@ -157,6 +158,11 @@ class Game:
         for i in range(self.players_count):
             player = dots_player.Player(i, self.players_names[i])
             self._players.append(player)
+        if self.players_count == 1:
+            robot = ai_player.AI_player(0, 1, name='Robot')
+            self._players.append(robot)
+            self.players_count += 1
+        self.with_robot = type(self._players[1]) is ai_player.AI_player
         self.current_player = 0
         self._caught_dots = set()
 
@@ -198,13 +204,25 @@ class Game:
                     self._switch_scene(None)
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                     end_flag = True
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        pos = game_map.get_closest_cross(event.pos)
-                        if self._map.in_bounds(pos):
-                            is_success = self._try_make_step(pos)
-                            if is_success:
-                                self._remaining_steps -= 1
+                is_step_made = False
+                pos = (0, 0)
+                if self.with_robot and self.current_player == 1:
+                    robot = self._players[1]
+                    used_dots = self._players[0].pressed_dots.union(self._caught_dots).union(robot.pressed_dots)
+                    pos = robot.get_step(self._last_step, self._map, used_dots)
+                    if pos is not None:
+                        is_step_made = True
+                else:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.button == 1:
+                            pos = game_map.get_closest_cross(event.pos)
+                            if self._map.in_bounds(pos):
+                                is_step_made = True
+                if is_step_made:
+                    is_success = self._try_make_step(pos)
+                    if is_success:
+                        self._remaining_steps -= 1
+                        self._last_step = pos
             pygame.display.flip()
         if running:
             self._switch_scene(self._end_scene)
@@ -254,14 +272,17 @@ class Game:
                     if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == go_to_game_button:
                             player_names = [box.get_text() for box in text_boxes]
-                            if "" in player_names:
-                                label = f.render("Please name all players", True,
-                                                 RED)
-                                self._screen.blit(label, (100, 100))
-                            else:
-                                running = False
-                                self.players_names = player_names
-                                self._switch_scene(self._game_scene)
+                            for i in range(len(player_names)):
+                                if player_names[i] == '':
+                                    player_names[i] = None
+                            # if "" in player_names:
+                            #     label = f.render("Please name all players", True,
+                            #                      RED)
+                            #     self._screen.blit(label, (100, 100))
+                            # else:
+                            running = False
+                            self.players_names = player_names
+                            self._switch_scene(self._game_scene)
                         if event.ui_element == remove_player_button:
                             if len(text_boxes) > 1:
                                 text_boxes[-1].kill()

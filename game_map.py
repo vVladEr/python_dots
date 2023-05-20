@@ -33,6 +33,14 @@ class Map:
         flag_y = self._right_top[1] <= pos[1] <= self._left_bottom[1]
         return flag_x and flag_y
 
+    def get_all_dots(self):
+        rect_x = (self.screen_width - self._column_count * SQUARE_SIZE) // 2
+        rect_y = (self.screen_height - self._line_count * SQUARE_SIZE) // 2
+        for i in range(self._column_count + 1):
+            for j in range(self._line_count + 1):
+                dot = (rect_x + i * SQUARE_SIZE, rect_y + j * SQUARE_SIZE)
+                yield dot
+
 
 def get_dist(dot1, dot2):
     dx = dot1[0] - dot2[0]
