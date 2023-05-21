@@ -275,11 +275,6 @@ class Game:
                             for i in range(len(player_names)):
                                 if player_names[i] == '':
                                     player_names[i] = None
-                            # if "" in player_names:
-                            #     label = f.render("Please name all players", True,
-                            #                      RED)
-                            #     self._screen.blit(label, (100, 100))
-                            # else:
                             running = False
                             self.players_names = player_names
                             self._switch_scene(self._game_scene)

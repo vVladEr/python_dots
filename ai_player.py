@@ -1,6 +1,7 @@
 import time
 import dots_player
 import bfs
+import random
 
 
 class AI_player(dots_player.Player):
@@ -14,7 +15,10 @@ class AI_player(dots_player.Player):
 
 
 def get_prime_step(player_step, map, used_dots):
-    for step in bfs.get_neighbours(player_step):
+    steps = list(bfs.get_neighbours(player_step))
+    n = random.randint(0, 8)
+    for i in range(n, n + 8):
+        step = steps[i % len(steps)]
         if step not in used_dots and map.in_bounds(step):
             return step
     return get_default_step(map, used_dots)
