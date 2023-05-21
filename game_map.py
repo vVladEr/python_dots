@@ -42,7 +42,7 @@ class Map:
                 yield dot
 
 
-def get_dist(dot1, dot2):
+def get_distance(dot1, dot2):
     dx = dot1[0] - dot2[0]
     dy = dot1[1] - dot2[1]
     return math.sqrt(dx*dx + dy*dy)
@@ -51,14 +51,13 @@ def get_dist(dot1, dot2):
 def get_closest_cross(pos):
     temp_x = (pos[0] // SQUARE_SIZE) * SQUARE_SIZE
     temp_y = (pos[1] // SQUARE_SIZE) * SQUARE_SIZE
-    # temp_x = int(pos[0] / )
-    cur_dist = get_dist(pos, (temp_x, temp_y))
+    cur_dist = get_distance(pos, (temp_x, temp_y))
     cross_pos = [temp_x, temp_y]
     for dx in range(2):
         for dy in range(2):
             x_pos = temp_x + dx * SQUARE_SIZE
             y_pos = temp_y + dy * SQUARE_SIZE
-            dist = get_dist(pos, (x_pos, y_pos))
+            dist = get_distance(pos, (x_pos, y_pos))
             if dist < cur_dist:
                 cur_dist = dist
                 cross_pos[0] = x_pos
