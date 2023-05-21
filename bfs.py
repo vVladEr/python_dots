@@ -20,7 +20,7 @@ def find_cycles(start_point, points_set, distance=20):
                         merged_points.add(next)
                         merged_points.add(next_list.previous.value)
                         result = _merge_paths(next_list.previous, paths[next])
-                        if len(result) > 3 and _have_point_inside(result, distance):
+                        if len(result) > 3 and _can_have_point_inside(result, distance):
                             yield result
                             points_queue = _make_new_queue(points_queue, next)
                 continue
@@ -118,7 +118,7 @@ def _create_y_levels(path, max_y, min_y, distance=1):
     return y_levels
 
 
-def _have_point_inside(path, distance=1):
+def _can_have_point_inside(path, distance=1):
     max_y, min_y = get_max_and_min(path, lambda x: x[1])
     y_levels = _create_y_levels(path, max_y, min_y, distance)
     if len(y_levels) < 3:
@@ -194,62 +194,3 @@ class SinglyLinkedList:
         result = self._current.value
         self._current = self._current.previous
         return result
-
-
-if __name__ == '__main__':
-    # Для дебага
-    s = set()
-    s.add((1,0))
-    s.add((0,1))
-    s.add((2,0))
-    s.add((3,1))
-    s.add((3,2))
-    s.add((2,2))
-    s.add((1,2))
-    for c in find_cycles((1,2), s, 1):
-        for i in c:
-            print(i)
-        print('__')
-
-    if True:
-        print(':::::::::::')
-        s = set()
-        s.add((1,0))
-        s.add((0,1))
-        s.add((2,1))
-        s.add((1,2))
-        s.add((2,2))
-        s.add((0,0))
-        s.add((0,2))
-        s.add((2,0))
-
-        for c in find_cycles((1,0), s, 1):
-            for i in c:
-                print(i)
-            print('__')
-
-    if True:
-        s = set()
-        s.add((0, 1))
-        s.add((1, 0))
-        s.add((0, 2))
-        s.add((0, 3))
-        s.add((1, 4))
-        s.add((2, 1))
-        s.add((2, 2))
-        s.add((2, 3))
-        s.add((2, 2))
-
-        p = find_close_point_inside(s, (0, 1), 1)
-        print(f'point: {p}')
-
-        area = get_inside_area(s, p, 1)
-        print(area)
-
-        l = SinglyLinkedList(1)
-        l = SinglyLinkedList(2, l)
-        for i in l:
-            print(i)
-        print(':::::::::')
-        for i in l:
-            print(i)
