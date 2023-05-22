@@ -7,9 +7,9 @@ __pycache__/
 *.so
 
 # Game statistic
-.bak
-.dat
-.dir
+*.bak
+*.dat
+*.dir
 
 # Distribution / packaging
 .Python
