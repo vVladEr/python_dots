@@ -23,13 +23,13 @@ class Game:
         self.column_count = column_count
         self.line_count = line_count
         self.players_names = []
+        self._screen = pygame.display.set_mode(SIZE)
 
     def _switch_scene(self, scene):
         self._current_scene = scene
 
     # region MENU_SCENE
     def _menu_scene(self):
-        self._screen = pygame.display.set_mode(SIZE)
         self._screen.fill(WHITE)
 
         gui_manager = pygame_gui.UIManager(SIZE)
@@ -51,6 +51,16 @@ class Game:
             text='Start 20x20',
             manager=gui_manager
         )
+
+        small_game_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(((WIDTH - 200) / 7, (HEIGHT - 150) / 2), (200, 150)),
+            text='Start 10x10',
+            manager=gui_manager
+        )
+
+        f = pygame.font.SysFont('arial', 36, bold=True)
+        label = f.render("DOTS GAME", True, BLACK)
+        self._screen.blit(label, (310, 70))
 
         running = True
         while running:
@@ -79,9 +89,6 @@ class Game:
             gui_manager.update(pygame.time.Clock().tick(60))
 
     def _name_players_scene(self):
-        f = pygame.font.SysFont('arial', 24)
-
-        self._screen = pygame.display.set_mode(SIZE)
         self._screen.fill(WHITE)
 
         gui_manager = pygame_gui.UIManager(SIZE)
@@ -104,6 +111,7 @@ class Game:
             manager=gui_manager
         )
 
+        f = pygame.font.SysFont('arial', 24)
         label = f.render("Add players and name each of them", True, BLACK)
         self._screen.blit(label, (100, 50))
         text_boxes = []
@@ -169,7 +177,6 @@ class Game:
         self._caught_dots = set()
 
     def _create_game_screen(self):
-        self._screen = pygame.display.set_mode(SIZE)
         self._screen.fill(WHITE)
         for rect in self._map.get_net_rectangles():
             pygame.draw.rect(self._screen, GRAY, rect, 1)
@@ -278,6 +285,22 @@ class Game:
     # endregion
 
     # region END_SCENE
+    def _get_winner_or_default(self):
+        is_draw = max(self._players, key=lambda x: x.points) == min(self._players, key=lambda x: x.points)
+        if is_draw:
+            return None
+        return max(self._players, key=lambda x: x.points)
+
+    def _print_results_text(self):
+        winner = self._get_winner_or_default()
+        results_text = 'Draw! Friendship won!'
+        if winner is not None:
+            results_text = f'{winner.name} won!'
+        x = WIDTH // 2 - len(results_text) * 5
+        f = pygame.font.SysFont('arial', 24, bold=True)
+        label = f.render(results_text, True, BLACK)
+        self._screen.blit(label, (x, 10))
+
     def _end_scene(self):
         gui_manager = pygame_gui.UIManager(SIZE, "theme.json")
         restart_button = pygame_gui.elements.UIButton(
@@ -285,6 +308,8 @@ class Game:
             text='Back to menu',
             manager=gui_manager
         )
+
+        self._print_results_text()
 
         running = True
         while running:
