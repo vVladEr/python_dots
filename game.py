@@ -122,7 +122,7 @@ class Game:
                 if event.type == pygame.USEREVENT:
                     if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == go_to_game_button:
-                            player_names = [box.get_text() for box in text_boxes]
+                            player_names = [box.get_text().replace('\n', '') for box in text_boxes]
                             for i in range(len(player_names)):
                                 if player_names[i] == '':
                                     player_names[i] = None
