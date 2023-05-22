@@ -2,13 +2,11 @@ import pygame
 import pygame_gui
 import sys
 import game_map
-import dots_player
-import bfs
-import ai_player
+import game_logic
 
 
 # размер экрана
-SIZE = WIDTH, HEIGHT = 800, 600
+SIZE = WIDTH, HEIGHT = game_logic.WIDTH, game_logic.HEIGHT
 
 GRAY = (211, 211, 211)
 WHITE = (255, 255, 255)
@@ -18,11 +16,9 @@ RED = (220, 20, 60)
 pygame.init()
 
 
-class Game:
+class Game(game_logic.GameLogic):
     def __init__(self, column_count, line_count):
-        self.column_count = column_count
-        self.line_count = line_count
-        self.players_names = []
+        game_logic.GameLogic.__init__(self, column_count, line_count)
         self._screen = pygame.display.set_mode(SIZE)
 
     def _switch_scene(self, scene):
@@ -161,23 +157,6 @@ class Game:
     # endregion
 
     # region GAME_SCENE
-    def _init_game(self):
-        self._dots = set()
-        self._map = game_map.Map(WIDTH, HEIGHT, self.column_count, self.line_count)
-        self._remaining_steps = (self.column_count + 1) * (self.line_count + 1)
-        self._players = []
-        self.players_count = len(self.players_names)
-        for i in range(self.players_count):
-            player = dots_player.Player(i, self.players_names[i])
-            self._players.append(player)
-        if self.players_count == 1:
-            robot = ai_player.AI_player(0, 1, name='Robot')
-            self._players.append(robot)
-            self.players_count += 1
-        self.with_robot = type(self._players[1]) is ai_player.AI_player
-        self.current_player = 0
-        self._caught_dots = set()
-
     def _create_game_screen(self):
         self._screen.fill(WHITE)
         for rect in self._map.get_net_rectangles():
@@ -186,22 +165,14 @@ class Game:
             self._screen.blit(self._players[i].get_points_text(), (10, 10 + i * 30))
         pygame.display.flip()
 
-    def _intersect_enemy_dots(self, area_inside_cycle, current_player):
-        enemy_points = set()
-        for enemy in self._players:
-            if enemy.number == current_player.number:
-                continue
-            enemy_intersection = area_inside_cycle.intersection(enemy.pressed_dots)
-            enemy_points = enemy_points.union(enemy_intersection)
-        return enemy_points
-
-    def _draw_shape(self, cycle):
+    def _draw_cycles(self, cycles):
         colour = self._players[self.current_player].colour
-        n = len(cycle)
-        for i in range(n):
-            pygame.draw.line(self._screen, colour, cycle[i], cycle[(i+1) % n], 3)
+        for cycle in cycles:
+            n = len(cycle)
+            for i in range(n):
+                pygame.draw.line(self._screen, colour, cycle[i], cycle[(i+1) % n], 3)
 
-    def _update_player_points_counter(self):
+    def _redraw_player_points_counter(self):
         i = self.current_player
         rect = self._players[i].clear_points_text().get_rect()
         rect.topleft = (10, 10 + i * 30)
@@ -209,45 +180,6 @@ class Game:
         self._screen.blit(self._players[i].get_points_text(), (10, 10 + i * 30))
         self._players[self.current_player].prev_points = self._players[self.current_player].points
         pygame.display.flip()
-
-    def _is_used_point(self, dot):
-        for player in self._players:
-            if dot in player.pressed_dots:
-                return True
-        return False
-
-    def _try_find_catching_cycle(self, pos):
-        player = self._players[self.current_player]
-        non_caught_dots = player.pressed_dots.difference(self._caught_dots)
-        cycles = bfs.find_cycles(pos, non_caught_dots)
-        for cycle in cycles:
-            path_list = list(cycle)
-            inside_area = _get_area_inside_cycle(path_list, pos)
-            inside_area = inside_area.difference(self._caught_dots)
-            enemy_points = self._intersect_enemy_dots(inside_area, player)
-            if len(enemy_points) > 0:
-                self._draw_shape(path_list)
-                self._remaining_steps -= (len(inside_area) - len(enemy_points))
-                self._caught_dots = self._caught_dots.union(inside_area)
-                player.points += len(enemy_points)
-                self._update_player_points_counter()
-
-    def _update_player_index(self):
-        self.current_player += 1
-        self.current_player %= self.players_count
-
-    def _try_make_step(self, pos):
-        if pos in self._caught_dots:
-            return False
-        if self._is_used_point(pos):
-            return False
-        player = self._players[self.current_player]
-        colour = player.colour
-        pygame.draw.circle(self._screen, colour, pos, 5)
-        player.pressed_dots.add(pos)
-        self._try_find_catching_cycle(pos)
-        self._update_player_index()
-        return True
 
     def _game_scene(self):
         self._init_game()
@@ -276,10 +208,16 @@ class Game:
                             if self._map.in_bounds(pos):
                                 is_step_made = True
                 if is_step_made:
-                    is_success = self._try_make_step(pos)
+                    is_success, paths = self._try_make_step(pos)
                     if is_success:
                         self._remaining_steps -= 1
                         self._last_step = pos
+                        colour = self._players[self.current_player].colour
+                        pygame.draw.circle(self._screen, colour, pos, 5)
+                        if len(paths) > 0:
+                            self._draw_cycles(paths)
+                            self._redraw_player_points_counter()
+                        self._update_player_index()
             pygame.display.flip()
         if running:
             self._switch_scene(self._end_scene)
@@ -287,12 +225,6 @@ class Game:
     # endregion
 
     # region END_SCENE
-    def _get_winner_or_default(self):
-        is_draw = max(self._players, key=lambda x: x.points) == min(self._players, key=lambda x: x.points)
-        if is_draw:
-            return None
-        return max(self._players, key=lambda x: x.points)
-
     def _print_results_text(self):
         winner = self._get_winner_or_default()
         results_text = 'Draw! Friendship won!'
@@ -339,11 +271,3 @@ class Game:
             self._current_scene()
         pygame.quit()
         sys.exit()
-
-
-def _get_area_inside_cycle(path, pos):
-    path_set = set(path)
-    inside_point = bfs.find_close_point_inside(path_set, pos, game_map.SQUARE_SIZE)
-    if inside_point is None:
-        return set()
-    return bfs.get_inside_area(path_set, inside_point, game_map.SQUARE_SIZE)
