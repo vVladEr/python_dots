@@ -52,9 +52,9 @@ class Game:
             manager=gui_manager
         )
 
-        small_game_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(((WIDTH - 200) / 7, (HEIGHT - 150) / 2), (200, 150)),
-            text='Start 10x10',
+        statistics_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(((WIDTH - 200) / 2, 450), (200, 70)),
+            text='Game statistics',
             manager=gui_manager
         )
 
@@ -70,6 +70,8 @@ class Game:
                     sys.exit()
                 if event.type == pygame.USEREVENT:
                     if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                        if event.ui_element == statistics_button:
+                            continue
                         if event.ui_element == big_game_button:
                             self.line_count = 20
                             self.column_count = 20
