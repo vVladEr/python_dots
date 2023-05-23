@@ -2,10 +2,13 @@ import game_map
 import dots_player
 import bfs
 import ai_player
+import game_statistic
 
 
 # размер экрана
 SIZE = WIDTH, HEIGHT = 800, 600
+
+SAVER_FILE_NAME = 'game_statistic_saver'
 
 
 class GameLogic:
@@ -88,6 +91,19 @@ class GameLogic:
         if is_draw:
             return None
         return max(self._players, key=lambda x: x.points)
+
+    def _update_statistic(self):
+        saver = game_statistic.StatisticSaver(SAVER_FILE_NAME)
+        winner = self._get_winner_or_default()
+        if winner is None:
+            for player in self._players:
+                saver.update_player_statistic(player.name, False, True)
+        else:
+            saver.update_player_statistic(winner.name, True)
+            for loser in self._players:
+                if loser.name == winner.name:
+                    continue
+                saver.update_player_statistic(loser.name, False)
 
     # endregion
 

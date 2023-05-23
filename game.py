@@ -3,6 +3,7 @@ import pygame_gui
 import sys
 import game_map
 import game_logic
+import game_statistic
 
 
 # размер экрана
@@ -67,6 +68,8 @@ class Game(game_logic.GameLogic):
                 if event.type == pygame.USEREVENT:
                     if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == statistics_button:
+                            running = False
+                            self._switch_scene(self._statistic_scene)
                             continue
                         if event.ui_element == big_game_button:
                             self.line_count = 20
@@ -156,6 +159,64 @@ class Game(game_logic.GameLogic):
 
     # endregion
 
+    # region STATISTIC_SCENE
+    def _statistic_scene(self):
+        self._screen.fill(WHITE)
+
+        gui_manager = pygame_gui.UIManager(SIZE)
+
+        f = pygame.font.SysFont('arial', 28, bold=True)
+        label = f.render("DOTS GAME STATISTIC", True, BLACK)
+        self._screen.blit(label, (280, 30))
+
+        menu_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(((WIDTH - 100) / 2 - 15, 500), (150, 50)),
+            text='Back to menu',
+            manager=gui_manager
+        )
+
+        search_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((550, 100), (150, 40)),
+            text='Search',
+            manager=gui_manager
+        )
+
+        text_box = pygame_gui.elements.UITextEntryBox(
+            relative_rect=pygame.Rect((100, 100), (400, 40)),
+            manager=gui_manager
+        )
+
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.USEREVENT:
+                    if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                        if event.ui_element == menu_button:
+                            running = False
+                            self._switch_scene(self._menu_scene)
+
+                        if event.ui_element == search_button:
+                            name = text_box.get_text()
+                            saver = game_statistic.StatisticSaver(game_logic.SAVER_FILE_NAME)
+                            statistic = saver.get(name)
+                            if statistic is not None:
+                                pygame.draw.rect(self._screen, color=WHITE,
+                                                 rect=pygame.Rect((100, 200), (500, 300)))
+                                string_statistic = str(statistic)
+                                label = f.render(string_statistic, True, BLACK)
+                                self._screen.blit(label, (100, 200))
+
+                gui_manager.process_events(event)
+
+            gui_manager.draw_ui(self._screen)
+            pygame.display.flip()
+            gui_manager.update(pygame.time.Clock().tick(60))
+
+    # endregion
+
     # region GAME_SCENE
     def _create_game_screen(self):
         self._screen.fill(WHITE)
@@ -237,13 +298,14 @@ class Game(game_logic.GameLogic):
 
     def _end_scene(self):
         gui_manager = pygame_gui.UIManager(SIZE, "theme.json")
-        restart_button = pygame_gui.elements.UIButton(
+        menu_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(((WIDTH - 100) / 2 - 25, (HEIGHT - 50) / 8), (150, 50)),
             text='Back to menu',
             manager=gui_manager
         )
 
         self._print_results_text()
+        self._update_statistic()
 
         running = True
         while running:
@@ -253,7 +315,7 @@ class Game(game_logic.GameLogic):
                     sys.exit()
                 if event.type == pygame.USEREVENT:
                     if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                        if event.ui_element == restart_button:
+                        if event.ui_element == menu_button:
                             running = False
                             self._switch_scene(self._menu_scene)
 
