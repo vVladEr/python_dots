@@ -230,15 +230,18 @@ class Game(game_logic.GameLogic):
             self._screen.blit(self._players[i].get_points_text(), (10, 10 + i * 30))
         pygame.display.flip()
 
-    def _draw_cycles(self, cycles):
-        colour = self._players[self.current_player].colour
+    def _draw_cycles(self, cycles, colour=None):
+        if colour is None:
+            colour = self._players[self.current_player].colour
         for cycle in cycles:
             n = len(cycle)
             for i in range(n):
                 pygame.draw.line(self._screen, colour, cycle[i], cycle[(i+1) % n], 3)
 
-    def _redraw_player_points_counter(self):
-        i = self.current_player
+    def _redraw_player_points_counter(self, player_index=None):
+        i = player_index
+        if i is None:
+            i = self.current_player
         rect = self._players[i].clear_points_text().get_rect()
         rect.topleft = (10, 10 + i * 30)
         pygame.draw.rect(self._screen, WHITE, rect)
@@ -282,6 +285,15 @@ class Game(game_logic.GameLogic):
                         if len(paths) > 0:
                             self._draw_cycles(paths)
                             self._redraw_player_points_counter()
+                        else:
+                            for enemy in self._players:
+                                if enemy.number == self.current_player:
+                                    continue
+                                enemy_paths = self._find_passive_cycles(pos, enemy)
+                                if len(enemy_paths) > 0:
+                                    self._draw_cycles(enemy_paths, enemy.colour)
+                                    self._redraw_player_points_counter(enemy.number)
+
                         self._update_player_index()
             pygame.display.flip()
         if running:

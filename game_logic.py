@@ -50,8 +50,9 @@ class GameLogic:
                 return True
         return False
 
-    def _try_find_catching_cycle(self, pos):
-        player = self._players[self.current_player]
+    def _try_find_catching_cycle(self, pos, player=None):
+        if player is None:
+            player = self._players[self.current_player]
         non_caught_dots = player.pressed_dots.difference(self._caught_dots)
         cycles = bfs.find_cycles(pos, non_caught_dots)
         flag = False
@@ -82,6 +83,16 @@ class GameLogic:
         player.pressed_dots.add(pos)
         _, paths = self._try_find_catching_cycle(pos)
         return True, paths
+
+    def _find_passive_cycles(self, enemy_pos, enemy):
+        max_x, _ = bfs.get_max_and_min(enemy.pressed_dots, lambda x: x[0])
+        x = enemy_pos[0]
+        while x <= max_x:
+            current_pos = (x, enemy_pos[1])
+            if current_pos in enemy.pressed_dots:
+                return self._try_find_catching_cycle(current_pos, enemy)[1]
+            x += game_map.SQUARE_SIZE
+        return []
 
     # endregion
 

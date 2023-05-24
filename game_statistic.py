@@ -49,10 +49,3 @@ class PlayerStatistic:
                         f'Victories: {self.victories_count}', f'Defeats: {self.defeats_count}',
                         f'Max scores: {self.max_score}']
         return '\n'.join(result_lines)
-
-
-if __name__ == '__main__':
-    pass
-    # s = StatisticSaver('ok')
-    # s.update_player_statistic('r', False)
-    # print(s.get('r'))
