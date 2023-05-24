@@ -15,7 +15,7 @@ class StatisticSaver:
         name = player.name
         if name not in self.file_dict:
             self.file_dict[name] = PlayerStatistic(name)
-        self.file_dict[name] = self.file_dict[name].update_statistic(player.points, is_won, is_draw)
+        self.file_dict[name] = self.file_dict[name].update_statistic(player.scores, is_won, is_draw)
 
     def __del__(self):
         self.file_dict.close()

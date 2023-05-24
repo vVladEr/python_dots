@@ -17,13 +17,13 @@ class Player:
         self.pressed_dots = set()
         self.colour = PLAYER_COLOURS[number]
         self.prev_points = 0
-        self.points = 0
+        self.scores = 0
         self.name = name
         if name is None:
             self.name = f'Player{self.number + 1}'
 
     def get_points_text(self):
-        return f.render(f'{self.name}: {self.points}', True, self.colour)
+        return f.render(f'{self.name}: {self.scores}', True, self.colour)
 
     def clear_points_text(self):
         return f.render(f"{self.name}: {self.prev_points}", True, WHITE)

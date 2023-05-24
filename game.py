@@ -246,7 +246,7 @@ class Game(game_logic.GameLogic):
         rect.topleft = (10, 10 + i * 30)
         pygame.draw.rect(self._screen, WHITE, rect)
         self._screen.blit(self._players[i].get_points_text(), (10, 10 + i * 30))
-        self._players[self.current_player].prev_points = self._players[self.current_player].points
+        self._players[self.current_player].prev_points = self._players[self.current_player].scores
         pygame.display.flip()
 
     def _game_scene(self):

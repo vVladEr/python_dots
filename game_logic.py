@@ -66,7 +66,7 @@ class GameLogic:
                 paths.append(path_list)
                 self._remaining_steps -= (len(inside_area) - len(enemy_points))
                 self._caught_dots = self._caught_dots.union(inside_area)
-                player.points += len(enemy_points)
+                player.scores += len(enemy_points)
                 flag = True
         return flag, paths
 
@@ -98,10 +98,10 @@ class GameLogic:
 
     # region END_SCENE
     def _get_winner_or_default(self):
-        is_draw = max(self._players, key=lambda x: x.points) == min(self._players, key=lambda x: x.points)
+        is_draw = max(self._players, key=lambda x: x.scores) == min(self._players, key=lambda x: x.scores)
         if is_draw:
             return None
-        return max(self._players, key=lambda x: x.points)
+        return max(self._players, key=lambda x: x.scores)
 
     def _update_statistic(self):
         saver = game_statistic.StatisticSaver(SAVER_FILE_NAME)
