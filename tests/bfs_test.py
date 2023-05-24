@@ -57,10 +57,12 @@ class TestBFS(unittest.TestCase):
         self.assertEqual(result, (3, 0))
 
     def testCanHavePointInside(self):
-        result1 = bfs._can_have_point_inside(TEST_SET_1, TEST_DISTANCE)
-        self.assertTrue(result1)
-        result2 = bfs._can_have_point_inside(TEST_SET_1.difference({(1, 2)}), TEST_DISTANCE)
-        self.assertFalse(result2)
+        result = bfs._can_have_point_inside(TEST_SET_1, TEST_DISTANCE)
+        self.assertTrue(result)
+
+    def testCanNotHavePointInside(self):
+        result = bfs._can_have_point_inside(TEST_SET_1.difference({(1, 2)}), TEST_DISTANCE)
+        self.assertFalse(result)
 
     def testGetNeighbours(self):
         neighbours = {_ for _ in bfs.get_neighbours((0, 0), TEST_DISTANCE)}
