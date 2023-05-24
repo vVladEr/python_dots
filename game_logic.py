@@ -97,13 +97,13 @@ class GameLogic:
         winner = self._get_winner_or_default()
         if winner is None:
             for player in self._players:
-                saver.update_player_statistic(player.name, False, True)
+                saver.update_player_statistic(player, False, True)
         else:
-            saver.update_player_statistic(winner.name, True)
+            saver.update_player_statistic(winner, True)
             for loser in self._players:
                 if loser.name == winner.name:
                     continue
-                saver.update_player_statistic(loser.name, False)
+                saver.update_player_statistic(loser, False)
 
     # endregion
 

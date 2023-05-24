@@ -11,10 +11,11 @@ class StatisticSaver:
         else:
             return None
 
-    def update_player_statistic(self, name, is_won, is_draw=False):
+    def update_player_statistic(self, player, is_won, is_draw=False):
+        name = player.name
         if name not in self.file_dict:
             self.file_dict[name] = PlayerStatistic(name)
-        self.file_dict[name] = self.file_dict[name].update_statistic(is_won, is_draw)
+        self.file_dict[name] = self.file_dict[name].update_statistic(player.points, is_won, is_draw)
 
     def __del__(self):
         self.file_dict.close()
@@ -27,10 +28,11 @@ class PlayerStatistic:
         self.victories_count = 0
         self.defeats_count = 0
         self.draws_count = 0
-        # self.captured_points_count = 0
+        self.max_score = 0
 
-    def update_statistic(self, is_won, is_draw=False):
+    def update_statistic(self, scores, is_won, is_draw=False):
         self.games_count += 1
+        self.max_score = max(self.max_score, scores)
         if is_won:
             self.victories_count += 1
         elif is_draw:
@@ -44,7 +46,8 @@ class PlayerStatistic:
         if name != name[:10]:
             name = name[:10] + '...'
         result_lines = [name + ':', f'Total games: {self.games_count}',
-                        f'Victories: {self.victories_count}', f'Defeats: {self.defeats_count}']
+                        f'Victories: {self.victories_count}', f'Defeats: {self.defeats_count}',
+                        f'Max scores: {self.max_score}']
         return '\n'.join(result_lines)
 
 

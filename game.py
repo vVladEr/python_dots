@@ -166,7 +166,7 @@ class Game(game_logic.GameLogic):
         gui_manager = pygame_gui.UIManager(SIZE)
 
         f = pygame.font.SysFont('arial', 28, bold=True)
-        label = f.render("DOTS GAME STATISTIC", True, BLACK)
+        label = f.render('DOTS GAME STATISTIC', True, BLACK)
         self._screen.blit(label, (280, 30))
 
         menu_button = pygame_gui.elements.UIButton(
@@ -199,15 +199,19 @@ class Game(game_logic.GameLogic):
                             self._switch_scene(self._menu_scene)
 
                         if event.ui_element == search_button:
-                            name = text_box.get_text()
+                            name = text_box.get_text().replace('\n', '')
                             saver = game_statistic.StatisticSaver(game_logic.SAVER_FILE_NAME)
                             statistic = saver.get(name)
+                            pygame.draw.rect(self._screen, color=WHITE,
+                                             rect=pygame.Rect((100, 145), (500, 300)))
                             if statistic is not None:
-                                pygame.draw.rect(self._screen, color=WHITE,
-                                                 rect=pygame.Rect((100, 200), (500, 300)))
                                 string_statistic = str(statistic)
                                 label = f.render(string_statistic, True, BLACK)
                                 self._screen.blit(label, (100, 200))
+                            else:
+                                f = pygame.font.SysFont('arial', 24, bold=False)
+                                label = f.render(f'Player {name} not found', True, RED)
+                                self._screen.blit(label, (210 - len(name), 150))
 
                 gui_manager.process_events(event)
 
