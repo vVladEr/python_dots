@@ -3,6 +3,7 @@ import dots_player
 import bfs
 import ai_player
 import game_statistic
+from step_cancel import StepInfo, CycleInfo
 
 
 # размер экрана
@@ -17,6 +18,7 @@ class GameLogic:
         self.line_count = line_count
         self.players_names = []
         self.ai_difficulty = 0
+        self._current_step = None
 
     # region GAME_SCENE
     def _init_game(self):
@@ -68,6 +70,9 @@ class GameLogic:
                 self._remaining_steps -= (len(inside_area) - len(enemy_points))
                 self._caught_dots = self._caught_dots.union(inside_area)
                 player.scores += len(enemy_points)
+
+                cycle_info = CycleInfo(path_list, inside_area, player.number, len(enemy_points))
+                self._current_step.found_cycles_info.append(cycle_info)
                 flag = True
         return flag, paths
 
@@ -75,14 +80,38 @@ class GameLogic:
         self.current_player += 1
         self.current_player %= self.players_count
 
+    def _try_undo_step(self):
+        player = self._players[(self.current_player - 1) % self.players_count]
+        last_step = player.last_step
+        if last_step is None:
+            return False
+
+        self._remaining_steps += 1
+        player.pressed_dots.remove(last_step.pressed_dot)
+        for cycle_info in last_step.found_cycles_info:
+            self._remaining_steps += len(cycle_info.caught_area)
+            self._caught_dots = self._caught_dots.difference(cycle_info.caught_area)
+            self._players[cycle_info.player_number].found_cycles.remove(cycle_info.cycle)
+            self._remaining_steps -= cycle_info.scores
+            p = self._players[cycle_info.player_number]
+            p.scores -= cycle_info.scores
+
+        player.last_step = None
+        self.current_player = (self.current_player - 1) % self.players_count
+        if player is ai_player.AI_player:
+            self._try_undo_step()
+        return True
+
     def _try_make_step(self, pos):
         if pos in self._caught_dots:
             return False, None
         if self._is_used_point(pos):
             return False, None
+        self._current_step = StepInfo(pos)
         player = self._players[self.current_player]
         player.pressed_dots.add(pos)
         _, paths = self._try_find_catching_cycle(pos)
+        self._remaining_steps -= 1
         return True, paths
 
     def _find_passive_cycles(self, enemy_pos, enemy):

@@ -18,7 +18,9 @@ class Player:
         self.colour = PLAYER_COLOURS[number]
         self.prev_points = 0
         self.scores = 0
+        self.found_cycles = []
         self.name = name
+        self.last_step = None
         if name is None:
             self.name = f'Player{self.number + 1}'
 
@@ -27,3 +29,7 @@ class Player:
 
     def clear_points_text(self):
         return f.render(f"{self.name}: {self.prev_points}", True, WHITE)
+
+    def update_found_cycles(self, paths):
+        for path in paths:
+            self.found_cycles.append(path)

@@ -266,9 +266,26 @@ class Game(game_logic.GameLogic):
         self._players[self.current_player].prev_points = self._players[self.current_player].scores
         pygame.display.flip()
 
+    def _redraw_if_undo(self):
+        self._create_game_screen()
+        self._draw_player_turn()
+        for player in self._players:
+            self._redraw_player_points_counter(player.number)
+            for dot in player.pressed_dots:
+                pygame.draw.circle(self._screen, player.colour, dot, 5)
+            self._draw_cycles(player.found_cycles)
+
     def _game_scene(self):
         self._init_game()
         self._create_game_screen()
+        gui_manager = pygame_gui.UIManager(SIZE)
+
+        undo_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((20, HEIGHT - 50), (70, 30)),
+            text='Undo',
+            manager=gui_manager
+        )
+
         running = True
         end_flag = False
         while not end_flag and self._remaining_steps > 0 and running:
@@ -276,6 +293,12 @@ class Game(game_logic.GameLogic):
                 if event.type == pygame.QUIT:
                     running = False
                     self._switch_scene(None)
+                if event.type == pygame.USEREVENT:
+                    if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                        if event.ui_element == undo_button:
+                            is_success = self._try_undo_step()
+                            if is_success:
+                                self._redraw_if_undo()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                     end_flag = True
                 is_step_made = False
@@ -296,11 +319,12 @@ class Game(game_logic.GameLogic):
                 if is_step_made:
                     is_success, paths = self._try_make_step(pos)
                     if is_success:
-                        self._remaining_steps -= 1
                         self._last_step = pos
-                        colour = self._players[self.current_player].colour
+                        player = self._players[self.current_player]
+                        colour = player.colour
                         pygame.draw.circle(self._screen, colour, pos, 5)
                         if len(paths) > 0:
+                            player.update_found_cycles(paths)
                             self._draw_cycles(paths)
                             self._redraw_player_points_counter()
                         else:
@@ -309,12 +333,18 @@ class Game(game_logic.GameLogic):
                                     continue
                                 enemy_paths = self._find_passive_cycles(pos, enemy)
                                 if len(enemy_paths) > 0:
+                                    enemy.update_found_cycles(enemy_paths)
                                     self._draw_cycles(enemy_paths, enemy.colour)
                                     self._redraw_player_points_counter(enemy.number)
 
                         self._update_player_index()
                         self._draw_player_turn()
+                        player.last_step = self._current_step
+
+                gui_manager.process_events(event)
+            gui_manager.draw_ui(self._screen)
             pygame.display.flip()
+            gui_manager.update(pygame.time.Clock().tick(60))
         if running:
             self._switch_scene(self._end_scene)
 
