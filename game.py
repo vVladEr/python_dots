@@ -273,7 +273,7 @@ class Game(game_logic.GameLogic):
             self._redraw_player_points_counter(player.number)
             for dot in player.pressed_dots:
                 pygame.draw.circle(self._screen, player.colour, dot, 5)
-            self._draw_cycles(player.found_cycles)
+            self._draw_cycles(player.found_cycles, player.colour)
 
     def _game_scene(self):
         self._init_game()
