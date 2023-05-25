@@ -16,6 +16,7 @@ class GameLogic:
         self.column_count = column_count
         self.line_count = line_count
         self.players_names = []
+        self.ai_difficulty = 0
 
     # region GAME_SCENE
     def _init_game(self):
@@ -28,7 +29,7 @@ class GameLogic:
             player = dots_player.Player(i, self.players_names[i])
             self._players.append(player)
         if self.players_count == 1:
-            robot = ai_player.AI_player(0, 1, name='Robot')
+            robot = ai_player.AI_player(self.ai_difficulty, 1, name='Robot')
             self._players.append(robot)
             self.players_count += 1
         self.with_robot = type(self._players[1]) is ai_player.AI_player

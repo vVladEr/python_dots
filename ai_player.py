@@ -9,9 +9,11 @@ class AI_player(dots_player.Player):
         dots_player.Player.__init__(self, number, name)
         self.level = level
 
-    def get_step(self, player_step, map, used_dots, caught_dots):
+    def get_step(self, player_step, player_dots, map, used_dots, caught_dots):
         time.sleep(0.2)
-        return get_smart_step(player_step, map, used_dots, caught_dots)
+        if self.level:
+            return get_smart_step(player_dots, map, used_dots, caught_dots)
+        return get_prime_step(player_step, map, used_dots)
 
 
 def get_prime_step(player_step, map, used_dots):

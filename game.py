@@ -111,9 +111,18 @@ class Game(game_logic.GameLogic):
             manager=gui_manager
         )
 
+        choose_difficulty_list = pygame_gui.elements.UISelectionList(
+                relative_rect=pygame.Rect((WIDTH - 250, HEIGHT - 160), (200, 45)),
+                item_list=["Random", "Advanced"],
+                manager=gui_manager,
+                allow_multi_select=False
+        )
+
         f = pygame.font.SysFont('arial', 24)
         label = f.render("Add players and name each of them", True, BLACK)
+        difficulty_label = f.render("Choose Ai difficulty:", True, BLACK)
         self._screen.blit(label, (100, 50))
+        self._screen.blit(difficulty_label, (WIDTH-245, HEIGHT - 200))
         text_boxes = []
 
         text_box = pygame_gui.elements.UITextEntryBox(
@@ -135,6 +144,11 @@ class Game(game_logic.GameLogic):
                                 if player_names[i] == '':
                                     player_names[i] = None
                             running = False
+                            ai_difficulty = choose_difficulty_list.get_single_selection()
+                            if ai_difficulty == "Advanced":
+                                self.ai_difficulty = 1
+                            elif ai_difficulty == "Random":
+                                self.ai_difficulty = 0
                             self.players_names = player_names
                             self._switch_scene(self._game_scene)
                         if event.ui_element == remove_player_button:
@@ -269,7 +283,7 @@ class Game(game_logic.GameLogic):
                 if self.with_robot and self.current_player == 1:
                     robot = self._players[1]
                     used_dots = self._players[0].pressed_dots.union(self.caught_dots).union(robot.pressed_dots)
-                    pos = robot.get_step(self._players[0].pressed_dots, self._map, used_dots,
+                    pos = robot.get_step(self._last_step,self._players[0].pressed_dots, self._map, used_dots,
                                          self.caught_dots)
                     if pos is not None:
                         is_step_made = True
