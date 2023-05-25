@@ -112,7 +112,7 @@ class Game(game_logic.GameLogic):
         )
 
         choose_difficulty_list = pygame_gui.elements.UISelectionList(
-                relative_rect=pygame.Rect((WIDTH - 250, HEIGHT - 160), (200, 45)),
+                relative_rect=pygame.Rect((WIDTH - 250, HEIGHT - 160), (200, 46)),
                 item_list=["Random", "Advanced"],
                 manager=gui_manager,
                 allow_multi_select=False
@@ -282,9 +282,9 @@ class Game(game_logic.GameLogic):
                 pos = (0, 0)
                 if self.with_robot and self.current_player == 1:
                     robot = self._players[1]
-                    used_dots = self._players[0].pressed_dots.union(self.caught_dots).union(robot.pressed_dots)
-                    pos = robot.get_step(self._last_step,self._players[0].pressed_dots, self._map, used_dots,
-                                         self.caught_dots)
+                    used_dots = self._players[0].pressed_dots.union(self._caught_dots).union(robot.pressed_dots)
+                    pos = robot.get_step(self._last_step, self._players[0].pressed_dots, self._map, used_dots,
+                                         self._caught_dots)
                     if pos is not None:
                         is_step_made = True
                 else:

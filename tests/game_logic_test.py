@@ -17,7 +17,7 @@ class TestMap(unittest.TestCase):
         players[1].pressed_dots.add((100, 120))
         self.game._players = players
         self.game.current_player = 0
-        self.game.caught_dots = {(60, 60)}
+        self.game._caught_dots = {(60, 60)}
         self.game.players_count = 2
         self.game._dots = set()
         self.game._map = game_map.Map(WIDTH, HEIGHT, self.game.column_count,
