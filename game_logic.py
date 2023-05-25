@@ -33,7 +33,7 @@ class GameLogic:
             self.players_count += 1
         self.with_robot = type(self._players[1]) is ai_player.AI_player
         self.current_player = 0
-        self._caught_dots = set()
+        self.caught_dots = set()
 
     def _intersect_enemy_dots(self, area_inside_cycle, current_player):
         enemy_points = set()
@@ -53,19 +53,19 @@ class GameLogic:
     def _try_find_catching_cycle(self, pos, player=None):
         if player is None:
             player = self._players[self.current_player]
-        non_caught_dots = player.pressed_dots.difference(self._caught_dots)
+        non_caught_dots = player.pressed_dots.difference(self.caught_dots)
         cycles = bfs.find_cycles(pos, non_caught_dots)
         flag = False
         paths = []
         for cycle in cycles:
             path_list = list(cycle)
             inside_area = _get_area_inside_cycle(path_list, pos)
-            inside_area = inside_area.difference(self._caught_dots)
+            inside_area = inside_area.difference(self.caught_dots)
             enemy_points = self._intersect_enemy_dots(inside_area, player)
             if len(enemy_points) > 0:
                 paths.append(path_list)
                 self._remaining_steps -= (len(inside_area) - len(enemy_points))
-                self._caught_dots = self._caught_dots.union(inside_area)
+                self.caught_dots = self.caught_dots.union(inside_area)
                 player.scores += len(enemy_points)
                 flag = True
         return flag, paths
@@ -75,7 +75,7 @@ class GameLogic:
         self.current_player %= self.players_count
 
     def _try_make_step(self, pos):
-        if pos in self._caught_dots:
+        if pos in self.caught_dots:
             return False, None
         if self._is_used_point(pos):
             return False, None

@@ -33,7 +33,7 @@ class TestBFS(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def testGetPossibleDirections(self):
-        directions = [_ for _ in bfs._get_possible_directions(INSIDE_POINT, TEST_DISTANCE)]
+        directions = [_ for _ in bfs.get_possible_directions(INSIDE_POINT, TEST_DISTANCE)]
         self.assertEqual(set(directions), TEST_SET_1)
 
     def testFindPointInside(self):

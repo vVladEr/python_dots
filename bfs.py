@@ -34,14 +34,14 @@ def get_inside_area(path_set, point_inside, distance=20):
     while len(stack) > 0:
         current_point = stack.pop()
         result.add(current_point)
-        for new_point in _get_possible_directions(current_point, distance):
+        for new_point in get_possible_directions(current_point, distance):
             if new_point in path_set or new_point in result:
                 continue
             stack.append(new_point)
     return result
 
 
-def _get_possible_directions(current_point, distance=20):
+def get_possible_directions(current_point, distance=20):
     yield current_point[0], current_point[1] + distance
     yield current_point[0], current_point[1] - distance
     yield current_point[0] + distance, current_point[1]
