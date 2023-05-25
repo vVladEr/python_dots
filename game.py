@@ -5,7 +5,6 @@ import game_map
 import game_logic
 import game_statistic
 
-
 # размер экрана
 SIZE = WIDTH, HEIGHT = game_logic.WIDTH, game_logic.HEIGHT
 
@@ -148,8 +147,8 @@ class Game(game_logic.GameLogic):
                         if event.ui_element == add_player_button:
                             if len(text_boxes) < 4:
                                 text_box = pygame_gui.elements.UITextEntryBox(
-                                            relative_rect=pygame.Rect((200, 150 + len(text_boxes) * 50), (200, 40)),
-                                            manager=gui_manager)
+                                    relative_rect=pygame.Rect((200, 150 + len(text_boxes) * 50), (200, 40)),
+                                    manager=gui_manager)
                                 text_boxes.append(text_box)
                 gui_manager.process_events(event)
 
@@ -230,13 +229,17 @@ class Game(game_logic.GameLogic):
             self._screen.blit(self._players[i].get_points_text(), (10, 10 + i * 30))
         pygame.display.flip()
 
+    def _draw_player_turn(self):
+        pygame.draw.circle(self._screen, self._players[self.current_player].colour,
+                           (750, 40), 10)
+
     def _draw_cycles(self, cycles, colour=None):
         if colour is None:
             colour = self._players[self.current_player].colour
         for cycle in cycles:
             n = len(cycle)
             for i in range(n):
-                pygame.draw.line(self._screen, colour, cycle[i], cycle[(i+1) % n], 3)
+                pygame.draw.line(self._screen, colour, cycle[i], cycle[(i + 1) % n], 3)
 
     def _redraw_player_points_counter(self, player_index=None):
         i = player_index
@@ -296,6 +299,7 @@ class Game(game_logic.GameLogic):
                                     self._redraw_player_points_counter(enemy.number)
 
                         self._update_player_index()
+                        self._draw_player_turn()
             pygame.display.flip()
         if running:
             self._switch_scene(self._end_scene)
