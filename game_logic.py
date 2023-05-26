@@ -81,9 +81,12 @@ class GameLogic:
         self.current_player %= self.players_count
 
     def _try_undo_step(self):
-        player = self._players[(self.current_player - 1) % self.players_count]
+        current_player = self.current_player
+        self.current_player = (self.current_player - 1) % self.players_count
+        player = self._players[self.current_player]
         last_step = player.last_step
         if last_step is None:
+            self.current_player = current_player
             return False
 
         self._remaining_steps += 1
@@ -97,8 +100,7 @@ class GameLogic:
             p.scores -= cycle_info.scores
 
         player.last_step = None
-        self.current_player = (self.current_player - 1) % self.players_count
-        if player is ai_player.AI_player:
+        if type(player) is ai_player.AI_player:
             self._try_undo_step()
         return True
 

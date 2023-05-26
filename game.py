@@ -278,6 +278,7 @@ class Game(game_logic.GameLogic):
     def _game_scene(self):
         self._init_game()
         self._create_game_screen()
+        self._draw_player_turn()
         gui_manager = pygame_gui.UIManager(SIZE)
 
         undo_button = pygame_gui.elements.UIButton(
